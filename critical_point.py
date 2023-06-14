@@ -24,12 +24,21 @@ def critical_point_refined(lambda1,mu0,mu1,mu2,ml,tmin,tmax,numtemp,minsigma,max
             print("mu value already checked. Tc=",Tc,"order=",order)
         else:
             order, iterationNumber, sigma_list,temps_list,Tc=critical_zoom(tmin,tmax,numtemp,minsigma,maxsigma,ml,mu,lambda1,mu0,mu1,mu2)
+            # create a dataframe to store sigma_list and temps_list
+            df1=pd.DataFrame({'temps':temps_list,'sigma':sigma_list})
+            # add order, mu, and Tc to the dataframe
+            df1['order']=order
+            df1['mu']=mu
+            df1['Tc']=Tc
+            #pickle the dataframe with the values of ml, lambda1, and mu in the filename
+            df1.to_pickle("data/sigma_transition_mq_"+str(ml)+"_lambda_"+str(lambda1)+"_mu_"+str(mu)+".pkl")
+
             #add the current mu value to the list
             mu_list.append(mu)
             #add the corresponding Tc and order values to the lists
             Tc_list.append(Tc)
             order_list.append(order)
-            
+
 
         if mu==mu_initial and order==1:
             print(" no critical point. Transition is always first-order for mu greater than", mu_initial)
@@ -37,8 +46,20 @@ def critical_point_refined(lambda1,mu0,mu1,mu2,ml,tmin,tmax,numtemp,minsigma,max
         if order==1:
             mu=mu-delta_mu+delta_mu/2
             delta_mu=delta_mu/2
+            "!!! might need to adjust the temperature range and maxsigma here"
         else:
             mu=mu+delta_mu
+
+            #adjust the temperature range if Tc is too close to the boundaries
+            if Tc< tmin+50:
+                tmin=max(0,tmin-50)
+                tmax=max(tmin+50,tmax-50)
+            #adjust maxsigma if it is too high
+            if maxsigma>np.amax(sigma_list[0][:,0])+150:
+                maxsigma=np.amax(sigma_list[0][:,0])-50
+        if mu>5000:
+            print( "This is taking too long. No critical point found for mu less than 5000")
+            break
     #find the maximum of the first element of sigma_list
     actual_max_sigma=np.amax(sigma_list[0][:,0])
 

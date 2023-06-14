@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+EDITED On June 12 2023:
+    Only make deltasig = 0.1 if the range of sigma is <= 1. Otherwise, spurious results can be found
+
 EDITED On June 2 2023: 
     Looks for minimum of gradient of sigma instead of sigma^(1/3), which is more reliable,
     and will not accidentally say the transition temperature occurs when sigma goes to zero..
@@ -125,7 +128,7 @@ def allSigmas(args):
     
     "stepsize for search over sigma"
     "Note: search should be done over cube root of sigma, here called sl"
-    if maxsigma-minsigma<10:
+    if maxsigma-minsigma<=1:
         deltasig = 0.1
     else:
         deltasig = 1
@@ -286,10 +289,10 @@ def critical_zoom(tmin,tmax,numtemp,minsigma,maxsigma,ml,mu,lambda1,mu0,mu1,mu2)
     #create a list to store the sigma values, temperatures, and order of the transition
     sigma_list=[]
     temps_list=[]
-
+    Tc=tmin
 
     #iteratively run the order_checker function until the transition is first order, or until the bounds are too small
-    while order==2 and iterationNumber<10 and tmin<tmax and maxsigma-minsigma>2:
+    while order==2 and iterationNumber<10 and tmin<tmax and maxsigma-minsigma>2 and (tmax-tmin)/numtemp>1.0e-4:
         tmin,tmax,minsigma,maxsigma,order,temps,truesigma,Tc=order_checker(tmin,tmax,numtemp,minsigma,maxsigma,ml,mu,lambda1,mu0,mu1,mu2)
         iterationNumber=iterationNumber+1
         print("Iteration number ", iterationNumber)
