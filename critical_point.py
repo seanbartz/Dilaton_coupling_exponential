@@ -72,9 +72,10 @@ def critical_point_refined(lambda1,mu0,mu1,mu2,ml,tmin,tmax,numtemp,minsigma,max
     df['mu1']=mu1
     df['mu2']=mu2
     df['mu_precision']=mu_precision
+
+
+
     
-    #pickle the dataframe with the values of ml, lambda1 in the filename
-    df.to_pickle("data/phase_plot_zoom_mq_"+str(ml)+"_lambda_"+str(lambda1)+".pkl")
 
     # find the indices where order is 2
     index=np.where(np.array(order_list)==2)
@@ -89,6 +90,22 @@ def critical_point_refined(lambda1,mu0,mu1,mu2,ml,tmin,tmax,numtemp,minsigma,max
     mu_1storder=np.array(mu_list)[index]
     #find the corresponding Tc values
     Tc_1storder=np.array(Tc_list)[index]
+
+    #finding the best estimate for the critical point
+    #if mu first order is not empty (i.e. there is a critical point)
+    if mu_1storder.size>0:
+        # take the average of the largest value of mu_cross and the smallest value of mu_1storder
+        mu_crit=(np.amax(mu_cross)+np.amin(mu_1storder))/2
+        #find the corresponding Tc value
+        Tc_crit=np.interp(mu_crit,mu_list,Tc_list)
+
+        #add the critical point to the dataframe
+        df['mu_crit']=mu_crit
+        df['Tc_crit']=Tc_crit
+
+
+    #pickle the dataframe with the values of ml, lambda1 in the filename
+    df.to_pickle("data/phase_plot_zoom_mq_"+str(ml)+"_lambda_"+str(lambda1)+".pkl")
 
     #plot the Tc vs mu
     plt.plot(mu_cross,Tc_cross,label='crossover')
